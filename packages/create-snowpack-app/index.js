@@ -98,7 +98,11 @@ const {
   targetDirectoryRelative,
   targetDirectory,
 } = validateArgs(process.argv);
-const installedTemplate = path.join(targetDirectory, "node_modules", template);
+let validTemplate = template;
+if(template.substr(0, 4) === "http") {
+  validTemplate = template.split("/").pop();
+}
+const installedTemplate = path.join(targetDirectory, "node_modules", validTemplate);
 
 const currentVersion = process.versions.node;
 const requiredVersion = parseInt(currentVersion.split(".")[0], 10);
