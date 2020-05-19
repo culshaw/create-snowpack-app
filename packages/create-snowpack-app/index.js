@@ -6,6 +6,7 @@ const execa = require("execa");
 const yargs = require("yargs-parser");
 const { copy, removeSync } = require("fs-extra");
 const chalk = require("chalk");
+const getPackage = require('get-repo-package-json');
 
 function validateArgs(args) {
   const { template, useYarn, force, _ } = yargs(args);
@@ -98,11 +99,6 @@ const {
   targetDirectoryRelative,
   targetDirectory,
 } = validateArgs(process.argv);
-let validTemplate = template;
-if(template.substr(0, 4) === "http") {
-  validTemplate = template.split("/").pop();
-}
-const installedTemplate = path.join(targetDirectory, "node_modules", validTemplate);
 
 const currentVersion = process.versions.node;
 const requiredVersion = parseInt(currentVersion.split(".")[0], 10);
@@ -116,6 +112,14 @@ if (requiredVersion < 10) {
 }
 
 (async () => {
+  let validTemplate = template;
+  if(template.substr(0, 4) === "http") {
+    const pkg = await getPackage(template);
+    validTemplate = pkg.name;
+  }
+
+  const installedTemplate = path.join(targetDirectory, "node_modules", validTemplate);
+
   console.log(`\n  - Using template ${chalk.cyan(template)}`);
   console.log(`  - Creating a new project in ${chalk.cyan(targetDirectory)}`);
 
